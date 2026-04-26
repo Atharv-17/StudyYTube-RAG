@@ -12,9 +12,10 @@ def get_video_id(url):
 def get_transcript(video_id):
 
     try:
-        transcripts=YouTubeTranscriptApi.get_transcript(video_id)
+        api = YouTubeTranscriptApi()
+        transcripts= api.fetch(video_id)
         formatted_lines = [
-        f"[{format_timestamp(item['start'])}] {item['text']}"
+        f"[{format_timestamp(item.start)}] {item.text}"
             for item in transcripts
         ]
         return "\n".join(formatted_lines)
