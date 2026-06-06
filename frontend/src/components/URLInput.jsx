@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 function URLInput({onVideoProcessed}){
     const [url, setUrl] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -12,7 +13,7 @@ function URLInput({onVideoProcessed}){
         setIsLoading(true)
 
         try {
-            const response = await fetch('http://localhost:8000/process-video',{
+            const response = await fetch(`${API_URL}/process-video`,{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url })
