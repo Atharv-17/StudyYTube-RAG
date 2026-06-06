@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
+import ChatWindow from '../components/ChatWindow'
 
 function ChatScreen() {
   const [searchParams] = useSearchParams()
@@ -7,13 +8,13 @@ function ChatScreen() {
 
   return (
     <div className="flex h-[calc(100vh-64px)]">
-      {/* Left — Video */}
+
       <div className="w-[60%] p-4">
         <VideoPlayer url={videoUrl} />
       </div>
-      {/* Right — Chat */}
+
       <div className="w-[40%] border-l border-[#2a2a2a]">
-        <p className="text-white p-4">Chat coming soon!</p>
+        <ChatWindow />
       </div>
     </div>
   )

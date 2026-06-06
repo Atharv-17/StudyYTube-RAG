@@ -20,7 +20,7 @@ function ChatInput({ onSendMessage, isLoading }) {
         <button 
             disabled={!message || isLoading} 
             onClick={handleSend}
-            className="bg-[#7c7cff] text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#7c7cff] text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-[#3a3a6a]"
         >
             {isLoading ? "..." : "Send"}
         </button>
