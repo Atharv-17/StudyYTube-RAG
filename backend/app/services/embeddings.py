@@ -1,6 +1,7 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+import os
 
 def split_transcript(transcript):
     text_splitter = RecursiveCharacterTextSplitter(
@@ -12,7 +13,8 @@ def split_transcript(transcript):
 
 def get_embeddings():
     embeddings=HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        huggingfacehub_api_token=os.getenv("HF_TOKEN")
     )
     return embeddings
 
