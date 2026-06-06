@@ -28,8 +28,8 @@ def get_embeddings():
 
 def split_transcript(transcript):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200
+        chunk_size=800,
+        chunk_overlap=100
     )
     chunks = text_splitter.split_text(transcript)
     return chunks
