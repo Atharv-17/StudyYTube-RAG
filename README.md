@@ -15,7 +15,7 @@ StudyTube solves this by extracting the full transcript of any YouTube video and
 **What makes it effective:**
 - On-demand, session-based processing with no persistent storage layer
 - Timestamp-aware transcript extraction preserves temporal context
-- Diverse, non-repetitive answers
+- Diverse, non-repetitive answers via MMR retrieval
 - Entirely free to operate — built on open-source and free-tier infrastructure
 
 ---
@@ -51,7 +51,7 @@ StudyTube solves this by extracting the full transcript of any YouTube video and
 
 ---
 
-### AI & RAG Architecture
+## AI & RAG Architecture
 
 **What is RAG?**
 Retrieval-Augmented Generation (RAG) is an AI pattern that retrieves relevant context from a knowledge base before generating a response. Instead of relying solely on pre-trained knowledge, the LLM answers are grounded in the actual source content — making responses accurate, specific, and hallucination-resistant.
@@ -60,19 +60,18 @@ Retrieval-Augmented Generation (RAG) is an AI pattern that retrieves relevant co
 
 <img width="1600" height="877" alt="image" src="https://github.com/user-attachments/assets/0a0056fb-cf5f-4681-bfe3-d61041600e09" />
 
-
 | Step | Implementation |
 |------|---------------|
 | **Transcript Extraction** | Fetched via `youtube-transcript-api`; each line formatted as `[MM:SS] text` to preserve temporal context |
 | **Chunking** | `RecursiveCharacterTextSplitter` with `chunk_size=1000` and `chunk_overlap=200` to preserve semantic continuity |
-| **Embeddings** | Each chunk converted to a 384-dimensional vector via HuggingFace Inference API |
+| **Embeddings** | Each chunk converted to a vector via HuggingFace Inference API |
 | **Vector Database** | FAISS in-memory store — fast session-based retrieval with zero persistence overhead |
 | **Retriever** | MMR (Maximum Marginal Relevance) search — returns top 3 relevant and diverse chunks |
 | **LLM Generation** | Retrieved chunks + user question → structured prompt → Groq LLaMA 3 → grounded answer |
 
 ---
 
-### System Architecture Overview
+## System Architecture Overview
 
 The system follows a **scalable, modular, layered architecture** with strict separation of concerns:
 
@@ -92,9 +91,41 @@ Backend (FastAPI / Render)
 
 Each layer has a single, well-defined responsibility — making the system easy to extend, test, and maintain independently.
 
-
 > <img width="2597" height="784" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/52e05a0c-96ac-400f-8194-6bae425a7115" />
 
+---
+
+## System Design Decisions
+
+### Ingestion Pipeline
+```
+YouTube URL → Extract Video ID → Fetch Transcript (with timestamps) → Chunk → Embed → Store in FAISS
+```
+
+### Chunking Strategy
+- **Splitter:** `RecursiveCharacterTextSplitter` — splits on natural boundaries before splitting mid-word
+- **chunk_size:** `1000` — large enough to hold a complete thought, small enough to stay semantically focused
+- **chunk_overlap:** `200` — prevents context loss at chunk boundaries
+
+### Retrieval Method
+MMR retrieves chunks that are both *relevant to the query* and *diverse from each other*. Standard cosine similarity alone returns the top 3 most similar chunks — which often repeat the same content. MMR penalises redundancy so each retrieved chunk adds new information to the context window.
+
+### Prompt Design
+Strict, minimal prompt with no escape hatch for the model to answer from its own knowledge. Forces all answers to be grounded in retrieved context only — reducing hallucination risk significantly.
+
+---
+
+## Engineering Decisions
+
+| Decision | Choice | Why |
+|----------|--------|-----|
+| **Web framework** | FastAPI | Async-native, auto Swagger docs, Pydantic validation out of the box |
+| **Vector store** | FAISS (in-memory) | Session-based use case — no persistence needed, zero cost, zero setup |
+| **Embedding model** | HuggingFace Inference API | Avoids local PyTorch overhead — critical for staying within free-tier memory limits |
+| **LLM** | Groq + LLaMA 3 | Free, extremely fast inference, sufficient for retrieval-grounded Q&A |
+| **Retrieval** | MMR over cosine similarity | Diversity in retrieved chunks = better LLM context, fewer repetitive answers |
+| **Routing** | React Router | URL-based navigation, shareable links, browser back button support |
+| **State updates** | Functional updater `prev =>` | Avoids stale closure bugs in async React callbacks |
 
 ---
 
@@ -118,11 +149,11 @@ Each layer has a single, well-defined responsibility — making the system easy 
 |-----------|----------|
 | **Memory constraints on free-tier deployment (512MB)** | Switched from local HuggingFace model to Inference API — eliminated PyTorch/torch overhead entirely |
 | **Preventing LLM hallucinations** | Enforced strict prompt constraints so the model only answers from retrieved context, not pre-trained knowledge |
-| **Maintaining response relevance across long transcripts** |Tried out different startegies and implemented semantic chunking with overlap (`chunk_overlap=100`) to preserve context continuity at chunk boundaries |
+| **Maintaining response relevance across long transcripts** | Tried different strategies and implemented semantic chunking with overlap to preserve context continuity at chunk boundaries |
 | **Cold start latency on free-tier servers** | Documented expected behavior; designed frontend error handling to surface meaningful messages during server wake-up |
 | **Stale React state in async callbacks** | Replaced direct state references with functional updater pattern (`prev => [...prev, newItem]`) to guarantee latest state |
 | **CORS blocking cross-origin requests** | Added `CORSMiddleware` to FastAPI with environment-variable-controlled allowed origins |
-| **YouTube Transcript API breaking changes** | Adapted to new instance-based API and object dot-notation access after a version upgrade changed the interface |
+| **YouTube Transcript API breaking changes** | Adapted to new instance-based API and dot-notation access after a version upgrade changed the interface |
 
 ---
 
@@ -181,10 +212,16 @@ npm run dev
 
 ---
 
-## Author
+<div align="center">
 
-Built by **Me :)** — from zero to production, end-to-end.
+### Built and maintained by Me,Happy to collaborate and work on future scope :)
 
-> _"Build the brain first. Worry about the face later."_
+_From zero to production — one commit at a time._
+
+> **"Build the brain first. Worry about the face later."**
+
+---
 
 ⭐ If this project helped you learn something — drop a star. It means a lot.
+
+</div>
