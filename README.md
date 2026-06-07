@@ -58,6 +58,9 @@ Retrieval-Augmented Generation (RAG) is an AI pattern that retrieves relevant co
 
 **How RAG is implemented in StudyTube:**
 
+<img width="1600" height="877" alt="image" src="https://github.com/user-attachments/assets/0a0056fb-cf5f-4681-bfe3-d61041600e09" />
+
+
 | Step | Implementation |
 |------|---------------|
 | **Transcript Extraction** | Fetched via `youtube-transcript-api`; each line formatted as `[MM:SS] text` to preserve temporal context |
